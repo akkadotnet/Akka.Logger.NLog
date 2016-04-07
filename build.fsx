@@ -53,7 +53,6 @@ let perfOutput = FullName "PerfResults"
 
 let nugetDir = binDir @@ "nuget"
 let workingDir = binDir @@ "build"
-let libDir = workingDir @@ @"lib\net45\"
 let nugetExe = FullName @"src\.nuget\NuGet.exe"
 let docDir = "bin" @@ "doc"
 
@@ -114,6 +113,40 @@ Target "BuildRelease" DoNothing
 // Nuget targets 
 //--------------------------------------------------------------------------------
 
+
+open NuGet.Update
+//--------------------------------------------------------------------------------
+// Upgrade nuget package versions for dev and production
+
+let updateNugetPackages _ =
+  printfn "Updating NuGet dependencies"
+
+  let getConfigFile preRelease =
+    match preRelease with
+    | true -> "src/.nuget/NuGet.Dev.Config" 
+    | false -> "src/.nuget/NuGet.Config" 
+
+  for projectFile in !! "src/**/*.csproj" do
+    printfn "Updating packages for %s" projectFile
+    let project = Path.GetFileNameWithoutExtension projectFile
+    let projectDir = Path.GetDirectoryName projectFile
+    let config = projectDir @@ "packages.config"
+
+    NugetUpdate
+        (fun p ->
+                { p with
+                    ConfigFile = Some (getConfigFile isPreRelease)
+                    Prerelease = isPreRelease
+                    ToolPath = nugetExe
+                    RepositoryPath = "src/Packages"
+                    Ids = ["Akka"]
+                    }) config
+
+Target "UpdateDependencies" <| fun _ ->
+    printfn "Invoking updateNugetPackages"
+    updateNugetPackages()
+
+
 //--------------------------------------------------------------------------------
 // Clean nuget directory
 
@@ -130,20 +163,26 @@ let createNugetPackages _ =
             DeleteDir dir
             not (directoryExists dir)
         runWithRetries del 3 |> ignore
-
+    
+    let mutable dirId = 1
+     
     ensureDirectory nugetDir
     for nuspec in !! "src/**/*.nuspec" do
         printfn "Creating nuget packages for %s" nuspec
         
-        CleanDir workingDir
-
+        let tempBuildDir = workingDir + dirId.ToString()
+        ensureDirectory tempBuildDir
+        //clean it in case this target gets run multiple times. Which if it does is a bug. But hey since TC throws an exception when the dir is actually not empty. Its a nice circuitbreaker
+        CleanDir tempBuildDir
+        
+        let libDir = tempBuildDir @@ @"lib\net45\"
         let project = Path.GetFileNameWithoutExtension nuspec 
         let projectDir = Path.GetDirectoryName nuspec
         let projectFile = (!! (projectDir @@ project + ".*sproj")) |> Seq.head
         let releaseDir = projectDir @@ @"bin\Release"
         let packages = projectDir @@ "packages.config"
         let packageDependencies = if (fileExists packages) then (getDependencies packages) else []
-       
+               
         let pack outputDir symbolPackage =
             NuGetHelper.NuGet
                 (fun p ->
@@ -157,7 +196,7 @@ let createNugetPackages _ =
                         Version = release.NugetVersion
                         Tags = tags |> String.concat " "
                         OutputPath = outputDir
-                        WorkingDir = workingDir
+                        WorkingDir = tempBuildDir
                         SymbolPackage = symbolPackage
                         Dependencies = packageDependencies })
                 nuspec
@@ -171,7 +210,7 @@ let createNugetPackages _ =
         |> CopyFiles libDir
 
         // Copy all src-files (.cs and .fs files) to workingDir/src
-        let nugetSrcDir = workingDir @@ @"src/"
+        let nugetSrcDir = tempBuildDir @@ @"src/"
         // CreateDir nugetSrcDir
 
         let isCs = hasExt ".cs"
@@ -183,12 +222,12 @@ let createNugetPackages _ =
         //Remove workingDir/src/obj and workingDir/src/bin
         removeDir (nugetSrcDir @@ "obj")
         removeDir (nugetSrcDir @@ "bin")
-
+        
         // Create both normal nuget package and symbols nuget package. 
         // Uses the files we copied to workingDir and outputs to nugetdir
         pack nugetDir NugetSymbolPackage.Nuspec
-        
-        removeDir workingDir
+
+        dirId <- dirId + 1
 
 let publishNugetPackages _ = 
     let rec publishPackage url accessKey trialsLeft packageFile =
@@ -243,7 +282,6 @@ Target "CreateNuget" <| fun _ ->
 
 Target "PublishNuget" <| fun _ -> 
     publishNugetPackages()
-
 
 
 //--------------------------------------------------------------------------------
@@ -310,7 +348,7 @@ Target "HelpNuget" <| fun _ ->
 //--------------------------------------------------------------------------------
 
 // build dependencies
-"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
+"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "UpdateDependencies" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
 
 // nuget dependencies
 "CleanNuget" ==> "CreateNuget"
