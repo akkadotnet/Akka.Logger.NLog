@@ -7,10 +7,11 @@
 
 using System;
 using Akka.Actor;
-using Akka.Event;
 using Akka.Dispatch;
+using Akka.Event;
 using NLog;
 using NLogger = global::NLog.Logger;
+using NLogLevel = global::NLog.LogLevel;
 
 namespace Akka.Logger.NLog
 {
@@ -24,10 +25,10 @@ namespace Akka.Logger.NLog
     {
         private readonly ILoggingAdapter _log = Context.GetLogger();
 
-        private static void Log(LogEvent logEvent, Action<NLogger> logStatement)
+        private static void Log(LogEvent logEvent, Action<NLogger, string> logStatement)
         {
             var logger = LogManager.GetLogger(logEvent.LogClass.FullName);
-            logStatement(logger);
+            logStatement(logger, logEvent.LogSource);
         }
 
         /// <summary>
@@ -35,16 +36,27 @@ namespace Akka.Logger.NLog
         /// </summary>
         public NLogLogger()
         {
-            Receive<Error>(m => Log(m, logger => logger.Error(m.Cause, "{0}", m.Message)));
-            Receive<Warning>(m => Log(m, logger => logger.Warn("{0}", m.Message)));
-            Receive<Info>(m => Log(m, logger => logger.Info("{0}", m.Message)));
-            Receive<Debug>(m => Log(m, logger => logger.Debug("{0}", m.Message)));
+            Receive<Error>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Error, logSource, m.Cause, "{0}", m.Message)));
+            Receive<Warning>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Warn, logSource, "{0}", m.Message)));
+            Receive<Info>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Info, logSource, "{0}", m.Message)));
+            Receive<Debug>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Debug, logSource, "{0}", m.Message)));
             Receive<InitializeLogger>(m =>
             {
                 _log.Info("NLogLogger started");
                 Sender.Tell(new LoggerInitialized());
             });
         }
+
+        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, string message, params object[] parameters)
+        {
+            LogEvent(logger, level, logSource, null, message, parameters);
+        }
+
+        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, Exception exception, string message, params object[] parameters)
+        {
+            var logEvent = new LogEventInfo(level, "", null, message, parameters, exception);
+            logEvent.Properties["logSource"] = logSource;
+            logger.Log(logEvent);
+        }
     }
 }
-
