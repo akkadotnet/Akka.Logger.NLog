@@ -1,3 +1,7 @@
+#### 1.4.0 TBD ####
+
+Targeting NLog 4.5.0-rc06, since NLog 5.0.0-betaXX packages were removed from NuGet
+
 #### 1.3.0 August 31 2017 ####
 
 Support for Akka 1.3.0 and .NET Core
