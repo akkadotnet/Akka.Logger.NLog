@@ -54,9 +54,12 @@ namespace Akka.Logger.NLog
 
         private static void LogEvent(NLogger logger, NLogLevel level, string logSource, Exception exception, string message, params object[] parameters)
         {
-            var logEvent = new LogEventInfo(level, logger.Name, null, message, parameters, exception);
-            logEvent.Properties["logSource"] = logSource;
-            logger.Log(logEvent);
+            if (logger.IsEnabled(level))
+            {
+                var logEvent = new LogEventInfo(level, logger.Name, null, message, parameters, exception);
+                logEvent.Properties["logSource"] = logSource;
+                logger.Log(logEvent);
+            }
         }
     }
 }
