@@ -1,4 +1,9 @@
-#### 1.3.0 August 31 2017 ####
+#### 1.3.1 March 4 2018 ####
+
+Support for Akka 1.3.5
+Updated to NLog 4.5.0
+
+#### 1.3.0-BETA August 31 2017 ####
 
 Support for Akka 1.3.0 and .NET Core
 
