@@ -1,3 +1,8 @@
+#### 1.3.2 May 5 2018 ####
+
+Fixed NLog Logger Name to be without Assembly Name
+Added akkaSenderPath to NLog LogEventInfo.Properties
+
 #### 1.3.1 March 4 2018 ####
 
 Support for Akka 1.3.5
