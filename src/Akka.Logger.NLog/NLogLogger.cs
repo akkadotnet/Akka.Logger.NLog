@@ -25,10 +25,13 @@ namespace Akka.Logger.NLog
     {
         private readonly ILoggingAdapter _log = Context.GetLogger();
 
-        private static void Log(LogEvent logEvent, Action<NLogger, string> logStatement)
+        private static void Log(LogEvent logEvent, Action<NLogger, LogEvent> logStatement)
         {
-            var logger = LogManager.GetLogger(logEvent.LogClass.FullName);
-            logStatement(logger, logEvent.LogSource);
+            var loggerName = (logEvent.LogClass == typeof(DummyClassForStringSources) || logEvent.LogClass.GenericTypeArguments?.Length != 0)
+                ? logEvent.LogSource
+                : logEvent.LogClass.ToString(); // Include full namespace, but not assembly name
+            var logger = LogManager.GetLogger(loggerName);
+            logStatement(logger, logEvent);
         }
 
         /// <summary>
@@ -36,10 +39,10 @@ namespace Akka.Logger.NLog
         /// </summary>
         public NLogLogger()
         {
-            Receive<Error>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Error, logSource, m.Cause, "{0}", m.Message)));
-            Receive<Warning>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Warn, logSource, "{0}", m.Message)));
-            Receive<Info>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Info, logSource, "{0}", m.Message)));
-            Receive<Debug>(m => Log(m, (logger, logSource) => LogEvent(logger, NLogLevel.Debug, logSource, "{0}", m.Message)));
+            Receive<Error>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Error, m.LogSource, m.Cause, m.Message)));
+            Receive<Warning>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Warn, m.LogSource, logEvent.Message)));
+            Receive<Info>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Info, m.LogSource, logEvent.Message)));
+            Receive<Debug>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Debug, m.LogSource, logEvent.Message)));
             Receive<InitializeLogger>(m =>
             {
                 _log.Info("NLogLogger started");
@@ -47,17 +50,18 @@ namespace Akka.Logger.NLog
             });
         }
 
-        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, string message, params object[] parameters)
+        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, object message)
         {
-            LogEvent(logger, level, logSource, null, message, parameters);
+            LogEvent(logger, level, logSource, null, message);
         }
 
-        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, Exception exception, string message, params object[] parameters)
+        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, Exception exception, object message)
         {
             if (logger.IsEnabled(level))
             {
-                var logEvent = new LogEventInfo(level, logger.Name, null, message, parameters, exception);
-                logEvent.Properties["logSource"] = logSource;
+                var logEvent = new LogEventInfo(level, logger.Name, null, "{0}", new[] { message }, exception);
+                logEvent.Properties["logSource"] = logSource;   // TODO logSource is the same as logger.Name, now adding twice
+                logEvent.Properties["SourceContext"] = Context?.Sender?.Path?.ToString() ?? string.Empty;   // Same as Serilog
                 logger.Log(logEvent);
             }
         }

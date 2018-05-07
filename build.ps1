@@ -30,9 +30,9 @@ Param(
 )
 
 $FakeVersion = "4.61.2"
-$DotNetChannel = "preview";
-$DotNetVersion = "1.0.4";
-$DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1";
+$DotNetChannel = "LTS";
+$DotNetVersion = "2.0.0";
+$DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/v$DotNetVersion/scripts/obtain/dotnet-install.ps1";
 $NugetVersion = "4.1.0";
 $NugetUrl = "https://dist.nuget.org/win-x86-commandline/v$NugetVersion/nuget.exe"
 
