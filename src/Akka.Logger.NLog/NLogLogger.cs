@@ -39,10 +39,10 @@ namespace Akka.Logger.NLog
         /// </summary>
         public NLogLogger()
         {
-            Receive<Error>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Error, m.LogSource, m.Cause, m.Message)));
-            Receive<Warning>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Warn, m.LogSource, logEvent.Message)));
-            Receive<Info>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Info, m.LogSource, logEvent.Message)));
-            Receive<Debug>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Debug, m.LogSource, logEvent.Message)));
+            Receive<Error>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Error, logEvent.LogSource, m.Cause, logEvent.Message)));
+            Receive<Warning>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Warn, logEvent.LogSource, logEvent.Message)));
+            Receive<Info>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Info, logEvent.LogSource, logEvent.Message)));
+            Receive<Debug>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Debug, logEvent.LogSource, logEvent.Message)));
             Receive<InitializeLogger>(m =>
             {
                 _log.Info("NLogLogger started");
@@ -59,7 +59,10 @@ namespace Akka.Logger.NLog
         {
             if (logger.IsEnabled(level))
             {
-                var logEvent = new LogEventInfo(level, logger.Name, null, "{0}", new[] { message }, exception);
+                LogMessage logMessage = message as LogMessage;
+                var logEvent = (logMessage != null && logMessage.Args?.Length > 0) ?
+                    new LogEventInfo(level, logger.Name, null, logMessage.Format, logMessage.Args, exception) :
+                    new LogEventInfo(level, logger.Name, null, "{0}", new[] { message }, exception);
                 logEvent.Properties["logSource"] = logSource;   // TODO logSource is the same as logger.Name, now adding twice
                 logEvent.Properties["SourceContext"] = Context?.Sender?.Path?.ToString() ?? string.Empty;   // Same as Serilog
                 logger.Log(logEvent);
