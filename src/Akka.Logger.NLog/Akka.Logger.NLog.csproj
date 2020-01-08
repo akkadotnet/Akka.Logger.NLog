@@ -4,20 +4,22 @@
     <Description>NLog logging adapter for Akka.NET</Description>
     <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
     <PackageTags>akka;actors;actor model;Akka;concurrency;NLog</PackageTags>
-    <Copyright>Copyright © 2013-2017 Akka.NET Contrib Team</Copyright>
+    <Copyright>Copyright © 2013-2020 Akka.NET Contrib Team</Copyright>
     <Authors>Akka.NET Contrib</Authors>
-    <VersionPrefix>1.3.3</VersionPrefix>
-    <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
+    <VersionPrefix>1.3.4</VersionPrefix>
+    <PackageIconUrl>https://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/AkkaNetContrib/Akka.Logger.NLog</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/AkkaNetContrib/Akka.Logger.NLog/blob/master/LICENSE</PackageLicenseUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageReleaseNotes>Support for Akka 1.3.5 and .NET Core and structured logging</PackageReleaseNotes>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <PackageReleaseNotes>Dependency update for Akka 1.3.17 and NLog 4.5.11</PackageReleaseNotes>
+    <DisableImplicitFrameworkReferences Condition=" '$(TargetFramework)' == 'net45' ">true</DisableImplicitFrameworkReferences>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akka" Version="1.3.5" />
-    <PackageReference Include="NLog" Version="4.5.0" />
+    <PackageReference Include="Akka" Version="1.3.17" />
+    <PackageReference Include="NLog" Version="4.5.11" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
