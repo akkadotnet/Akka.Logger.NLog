@@ -1,3 +1,7 @@
+#### 1.3.4 Januari 12 2020 ####
+Update to Akka 1.3.17
+Update to NLog 4.5.11
+
 #### 1.3.3 June 30 2018 ####
 
 Support structured logging and message templates using NLog 4.5
