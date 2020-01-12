@@ -8,12 +8,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BB691E2E-B766-4EAA-8592-3129F83ACA9F}"
 	ProjectSection(SolutionItems) = preProject
 		build.fsx = build.fsx
+		build.ps1 = build.ps1
+		src\common.props = src\common.props
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Logger.NLog.Tests", "src\Akka.Logger.NLog.Tests\Akka.Logger.NLog.Tests.csproj", "{32923A88-E86B-4E73-9621-E7599DF36E5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Logger.NLog.Tests", "src\Akka.Logger.NLog.Tests\Akka.Logger.NLog.Tests.csproj", "{32923A88-E86B-4E73-9621-E7599DF36E5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

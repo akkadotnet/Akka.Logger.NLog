@@ -3,9 +3,9 @@
     <PackageTags>akka;actors;actor model;Akka;concurrency;nlog</PackageTags>
     <Copyright>Copyright © 2013-2020 Akka.NET Contrib Team</Copyright>
     <Authors>Akka.NET Contrib Team</Authors>
-    <PackageReleaseNotes>Support structured logging and message templates using NLog 4.5</PackageReleaseNotes>
-    <VersionPrefix>1.3.3</VersionPrefix>
-    <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
+    <PackageReleaseNotes>Dependency update for Akka 1.3.17 and NLog 4.5.11</PackageReleaseNotes>
+    <VersionPrefix>1.3.4</VersionPrefix>
+    <PackageIconUrl>https://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/AkkaNetContrib/Akka.Logger.Nlog</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/AkkaNetContrib/Akka.Logger.Nlog/blob/master/LICENSE</PackageLicenseUrl>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
