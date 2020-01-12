@@ -1,4 +1,9 @@
+#### 1.3.5 Januari 12 2020 ####
+
+Changed TargetFramework from net462 to net452
+
 #### 1.3.4 Januari 12 2020 ####
+
 Update to Akka 1.3.17
 Update to NLog 4.5.11
 
