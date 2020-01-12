@@ -14,7 +14,7 @@ pr: none
 variables:
   - group: nugetKeys #create this group with SECRET variables `nugetKey`
   - name: githubConnectionName
-    value: Akka.NET #replace this
+    value: AkkaDotNet_Releases #replace this
   - name: projectName
     value: Akka.Logger.NLog #replace this
   - name: githubRepositoryName
