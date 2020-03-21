@@ -39,10 +39,10 @@ namespace Akka.Logger.NLog
         /// </summary>
         public NLogLogger()
         {
-            Receive<Error>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Error, logEvent.LogSource, m.Cause, logEvent.Message)));
-            Receive<Warning>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Warn, logEvent.LogSource, logEvent.Message)));
-            Receive<Info>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Info, logEvent.LogSource, logEvent.Message)));
-            Receive<Debug>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Debug, logEvent.LogSource, logEvent.Message)));
+            Receive<Error>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Error, m.Cause, logEvent)));
+            Receive<Warning>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Warn, logEvent)));
+            Receive<Info>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Info, logEvent)));
+            Receive<Debug>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Debug, logEvent)));
             Receive<InitializeLogger>(m =>
             {
                 _log.Info("NLogLogger started");
@@ -50,22 +50,23 @@ namespace Akka.Logger.NLog
             });
         }
 
-        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, object message)
+        private static void LogEvent(NLogger logger, NLogLevel level, LogEvent logEvent)
         {
-            LogEvent(logger, level, logSource, null, message);
+          LogEvent(logger, level, null, logEvent);
         }
 
-        private static void LogEvent(NLogger logger, NLogLevel level, string logSource, Exception exception, object message)
+        private static void LogEvent(NLogger logger, NLogLevel level, Exception exception, LogEvent logEvent)
         {
             if (logger.IsEnabled(level))
             {
-                LogMessage logMessage = message as LogMessage;
-                var logEvent = (logMessage != null && logMessage.Args?.Length > 0) ?
+                LogMessage logMessage = logEvent.Message as LogMessage;
+                var logEventInfo = (logMessage != null && logMessage.Args?.Length > 0) ?
                     new LogEventInfo(level, logger.Name, null, logMessage.Format, logMessage.Args, exception) :
-                    new LogEventInfo(level, logger.Name, null, "{0}", new[] { message }, exception);
-                logEvent.Properties["logSource"] = logSource;   // TODO logSource is the same as logger.Name, now adding twice
-                logEvent.Properties["SourceContext"] = Context?.Sender?.Path?.ToString() ?? string.Empty;   // Same as Serilog
-                logger.Log(logEvent);
+                    new LogEventInfo(level, logger.Name, null, "{0}", new[] { logEvent.Message.ToString() }, exception);
+                logEventInfo.Properties["logSource"] = logEvent.LogSource;   // TODO logSource is the same as logger.Name, now adding twice
+                logEventInfo.Properties["SourceContext"] = Context?.Sender?.Path?.ToString() ?? string.Empty;   // Same as Serilog
+                logEventInfo.Properties["threadId"] = logEvent.Thread.ManagedThreadId.ToString().PadLeft(4, '0');
+                logger.Log(logEventInfo);
             }
         }
     }

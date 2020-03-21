@@ -1,30 +1,29 @@
-using System;
 using System.Linq;
+using System.Threading;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
 using Xunit;
 using Xunit.Abstractions;
+using LogLevel = Akka.Event.LogLevel;
 
-namespace Akka.Logger.Serilog.Tests
+namespace Akka.Logger.NLog.Tests
 {
     public class NLogFormattingSpecs : TestKit.Xunit2.TestKit
     {
-        public static readonly Config Config = @"akka.loglevel = DEBUG";
+        private static readonly Config Config = @"akka.loglevel = DEBUG";
 
         private readonly ILoggingAdapter _loggingAdapter;
-        private readonly global::NLog.Targets.MemoryTarget _loggingTarget = new global::NLog.Targets.MemoryTarget() { Layout = "${level}|${message}" };
+        const string ActorSystemName = "my-test-system";
 
         public NLogFormattingSpecs(ITestOutputHelper helper) : base(Config, output: helper)
         {
             Config myConfig = @"akka.loglevel = DEBUG
                     akka.loggers=[""Akka.Logger.NLog.NLogLogger, Akka.Logger.NLog""]";
 
-            var system = ActorSystem.Create("my-test-system", myConfig);
+            var system = ActorSystem.Create(ActorSystemName, myConfig);
 
             _loggingAdapter = Logging.GetLogger(system.EventStream, system.Name);
-
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(_loggingTarget);
 
             Sys.EventStream.Subscribe(TestActor, typeof(LogEvent));
         }
@@ -38,19 +37,49 @@ namespace Akka.Logger.Serilog.Tests
         [InlineData(LogLevel.ErrorLevel, "test case {c}", new object[] { 3.0 }, "Error|test case 3")]
         public void LoggingTest(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
-            _loggingTarget.Logs.Clear();
+            var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${level}|${message}" };
+            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+
+            loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            for (int i = 0; i < 100; ++i)
+            for (var i = 0; i < 100; ++i)
             {
-                if (_loggingTarget.Logs.Count != 0)
+                if (loggingTarget.Logs.Count != 0)
                     break;
 
-                System.Threading.Thread.Sleep(10);
+                Thread.Sleep(10);
             }
 
-            Assert.NotEmpty(_loggingTarget.Logs);
-            Assert.Equal(resultStr, _loggingTarget.Logs.Last());
+            Assert.NotEmpty(loggingTarget.Logs);
+            Assert.Equal(resultStr, loggingTarget.Logs.Last());
+        }
+
+        [Theory]
+        [InlineData(LogLevel.InfoLevel, "test case {0}", new object[] { 1 }, "{0}|{1}|test case 1")]
+        public void LoggingTestWithEventProperties(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
+        {
+            _loggingAdapter.Log(level, formatStr, formatArgs);
+            var loggingTarget = new global::NLog.Targets.MemoryTarget
+                {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId}|${message}"};
+            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+
+            loggingTarget.Logs.Clear();
+            _loggingAdapter.Log(level, formatStr, formatArgs);
+
+            for (var i = 0; i < 100; ++i)
+            {
+                if (loggingTarget.Logs.Count != 0)
+                    break;
+
+                Thread.Sleep(10);
+            }
+
+            var formattedResultString = string.Format(resultStr, ActorSystemName,
+                Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(4, '0'));
+
+            Assert.NotEmpty(loggingTarget.Logs);
+            Assert.Equal(formattedResultString, loggingTarget.Logs.Last());
         }
     }
 }
