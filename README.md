@@ -32,7 +32,7 @@ Add NLog.config file to your project
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <targets>
-    <target name="console" xsi:type="Console" layout="[${logger}] [${level:uppercase=true}] [${event-properties:item=logSource}] [${event-properties:item=threadId}] : ${message}"/>
+    <target name="console" xsi:type="Console" layout="[${logger}] [${level:uppercase=true}] [${event-properties:item=logSource}] [${event-properties:item=actorPath}] [${event-properties:item=threadId:format=D4}] : ${message}"/>
   </targets>
   <rules>
     <logger name="*" minlevel="Debug" writeTo="console"/>

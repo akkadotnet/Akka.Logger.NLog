@@ -61,7 +61,7 @@ namespace Akka.Logger.NLog.Tests
         {
             _loggingAdapter.Log(level, formatStr, formatArgs);
             var loggingTarget = new global::NLog.Targets.MemoryTarget
-                {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId}|${message}"};
+                {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId:format=D4}|${message}" };
             global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
 
             loggingTarget.Logs.Clear();
