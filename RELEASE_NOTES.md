@@ -1,3 +1,9 @@
+#### 1.4.10 October 29 2020 ####
+- Update Akka to 1.4.10
+- Update NLog to 4.7.5
+- Resolve [Null reference exception due to RemoteActorRefProvider.RemoteInternals being null](https://github.com/akkadotnet/akka.net/issues/4579)
+
+
 #### 1.4.5 May 4 2020 ####
 
 - Update Akka to 1.4.5
