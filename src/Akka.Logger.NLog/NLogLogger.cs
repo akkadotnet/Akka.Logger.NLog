@@ -23,7 +23,7 @@ namespace Akka.Logger.NLog
     /// </summary>
     public class NLogLogger : ReceiveActor, IRequiresMessageQueue<ILoggerMessageQueueSemantics>
     {
-        private readonly ILoggingAdapter _log = Context.GetLogger();
+        private readonly ILoggingAdapter _log = Logging.GetLogger(Context.System.EventStream, "NLogLogger");
 
         private static void Log(LogEvent logEvent, Action<NLogger, LogEvent> logStatement)
         {
