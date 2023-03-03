@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------
 
 using System;
+using System.Linq;
 using Akka.Actor;
 using Akka.Dispatch;
 using Akka.Event;
@@ -55,8 +56,8 @@ namespace Akka.Logger.NLog
             if (logger.IsEnabled(level))
             {
                 LogMessage logMessage = logEvent.Message as LogMessage;
-                var logEventInfo = (logMessage != null && logMessage.Args?.Length > 0) ?
-                    new LogEventInfo(level, logger.Name, null, logMessage.Format, logMessage.Args, exception) :
+                var logEventInfo = (logMessage != null && logMessage.Parameters().Count() > 0) ?
+                    new LogEventInfo(level, logger.Name, null, logMessage.Format, logMessage.Parameters().ToArray(), exception) :
                     new LogEventInfo(level, logger.Name, null, "{0}", new[] { logEvent.Message.ToString() }, exception);
                 if (logEventInfo.TimeStamp.Kind == logEvent.Timestamp.Kind)
                     logEventInfo.TimeStamp = logEvent.Timestamp;            // Timestamp of original LogEvent (instead of async Logger thread timestamp)
