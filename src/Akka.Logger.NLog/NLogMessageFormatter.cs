@@ -1,4 +1,6 @@
-﻿using Akka.Event;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Akka.Event;
 using NLog;
 using NLogLevel = global::NLog.LogLevel;
 
@@ -29,5 +31,8 @@ namespace Akka.Logger.NLog
             }
             return format;
         }
+
+        public string Format(string format, IEnumerable<object> args)
+            => Format(format, args.ToArray());
     }
 }
