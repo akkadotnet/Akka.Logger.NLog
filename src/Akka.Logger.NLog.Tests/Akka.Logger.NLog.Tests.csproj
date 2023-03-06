@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\common.props" />
   <PropertyGroup>
-     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+     <TargetFrameworks>$(NetFrameworkTestVersion);$(NetCoreTestVersion);$(NetTestVersion)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
