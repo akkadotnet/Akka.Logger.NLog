@@ -21,6 +21,10 @@ variables:
     value: AkkaNetContrib/Akka.Logger.NLog #replace this
 
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET 7 SDK'
+  inputs:
+    version: 7.x
 - task: BatchScript@1
   displayName: 'FAKE Build'
   inputs:
