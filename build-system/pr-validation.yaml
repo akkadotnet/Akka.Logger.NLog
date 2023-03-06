@@ -1,4 +1,4 @@
-# Pull request validation for Windows against the `dev` and `master` branches
+# Pull request validation for Linux against the `dev` and `master` branches
 # See https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema for reference
 trigger:
   branches:
@@ -6,17 +6,24 @@ trigger:
       - dev
       - master
 
+name: $(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
+
 pr:
   autoCancel: true # indicates whether additional pushes to a PR should cancel in-progress runs for the same PR. Defaults to true
   branches:
     include: [ dev, master ] # branch names which will trigger a build
 
-name: $(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
-
 jobs:
 - template: azure-pipeline.template.yaml
   parameters:
+    name: Ubuntu
+    vmImage: 'ubuntu-latest'
+    scriptFileName: ./build.sh
+    scriptArgs: all
+    
+- template: azure-pipeline.template.yaml
+  parameters:
     name: Windows
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
     scriptFileName: build.cmd
     scriptArgs: all
