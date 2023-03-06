@@ -12,7 +12,11 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <XunitVersion>2.4.1</XunitVersion>
+    <NetFrameworkTestVersion>net471</NetFrameworkTestVersion>
+    <NetCoreTestVersion>netcoreapp3.1</NetCoreTestVersion>
+    <NetTestVersion>net7.0</NetTestVersion>
+    <XunitVersion>2.4.2</XunitVersion>
+    <XunitRunnerVersion>2.4.5</XunitRunnerVersion>
     <TestSdkVersion>15.9.0</TestSdkVersion>
   </PropertyGroup>
 </Project>
