@@ -17,6 +17,8 @@
     <NetTestVersion>net7.0</NetTestVersion>
     <XunitVersion>2.4.2</XunitVersion>
     <XunitRunnerVersion>2.4.5</XunitRunnerVersion>
-    <TestSdkVersion>15.9.0</TestSdkVersion>
+    <TestSdkVersion>17.5.0</TestSdkVersion>
+    <AkkaVersion>1.4.49</AkkaVersion>
+    <NLogVersion>5.1.2</NLogVersion>
   </PropertyGroup>
 </Project>
