@@ -19,6 +19,6 @@
     <XunitRunnerVersion>2.4.5</XunitRunnerVersion>
     <TestSdkVersion>17.5.0</TestSdkVersion>
     <AkkaVersion>1.5.4</AkkaVersion>
-    <NLogVersion>5.1.3</NLogVersion>
+    <NLogVersion>5.1.4</NLogVersion>
   </PropertyGroup>
 </Project>
