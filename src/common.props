@@ -15,7 +15,7 @@
     <NetFrameworkTestVersion>net471</NetFrameworkTestVersion>
     <NetCoreTestVersion>netcoreapp3.1</NetCoreTestVersion>
     <NetTestVersion>net7.0</NetTestVersion>
-    <XunitVersion>2.4.2</XunitVersion>
+    <XunitVersion>2.5.1</XunitVersion>
     <XunitRunnerVersion>2.4.5</XunitRunnerVersion>
     <TestSdkVersion>17.6.3</TestSdkVersion>
     <AkkaVersion>1.5.8</AkkaVersion>
