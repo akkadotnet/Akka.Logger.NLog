@@ -3,6 +3,7 @@ using System.Threading;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
+using NLog;
 using Xunit;
 using Xunit.Abstractions;
 using LogLevel = Akka.Event.LogLevel;
@@ -11,7 +12,7 @@ namespace Akka.Logger.NLog.Tests
 {
     public class NLogFormattingSpecs : TestKit.Xunit2.TestKit
     {
-        private static readonly Config Config = @"akka.loglevel = DEBUG";
+        private static readonly Config Config = "akka.loglevel = DEBUG";
 
         private readonly ILoggingAdapter _loggingAdapter;
         const string LogSourceName = "my-test-system";
@@ -38,7 +39,7 @@ namespace Akka.Logger.NLog.Tests
         public void LoggingTest(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
             var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${level}|${message}" };
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+            LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
             loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
@@ -62,7 +63,7 @@ namespace Akka.Logger.NLog.Tests
             _loggingAdapter.Log(level, formatStr, formatArgs);
             var loggingTarget = new global::NLog.Targets.MemoryTarget
                 {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId:format=D4}|${message}" };
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+            LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
             loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
@@ -87,7 +88,7 @@ namespace Akka.Logger.NLog.Tests
         public void LoggingWithStructuredLogging(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
             var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${message:raw=true}|${all-event-properties}" };
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+            LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
             loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
@@ -100,7 +101,7 @@ namespace Akka.Logger.NLog.Tests
                 Thread.Sleep(10);
             }
 
-            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path.ToString(), Thread.CurrentThread.ManagedThreadId.ToString());
+            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, Thread.CurrentThread.ManagedThreadId.ToString());
 
             Assert.NotEmpty(loggingTarget.Logs);
             Assert.Equal(formattedResultString, loggingTarget.Logs.Last());

@@ -9,13 +9,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		build.fsx = build.fsx
 		build.ps1 = build.ps1
-		src\common.props = src\common.props
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Logger.NLog.Tests", "src\Akka.Logger.NLog.Tests\Akka.Logger.NLog.Tests.csproj", "{32923A88-E86B-4E73-9621-E7599DF36E5F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build-system", "build-system", "{FF62B97F-40AF-4A44-AF1B-F89DA9000B4A}"
+	ProjectSection(SolutionItems) = preProject
+		build-system\azure-pipeline.template.yaml = build-system\azure-pipeline.template.yaml
+		build-system\nightly-builds.yaml = build-system\nightly-builds.yaml
+		build-system\pr-validation.yaml = build-system\pr-validation.yaml
+		build-system\README.md = build-system\README.md
+		build-system\windows-release.yaml = build-system\windows-release.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,5 +45,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E6D29FE3-301D-4898-BD68-BFA6785695BB}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FF62B97F-40AF-4A44-AF1B-F89DA9000B4A} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
 	EndGlobalSection
 EndGlobal
