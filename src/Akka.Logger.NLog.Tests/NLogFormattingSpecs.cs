@@ -3,6 +3,7 @@ using System.Threading;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
+using FluentAssertions.Extensions;
 using NLog;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,16 +45,10 @@ namespace Akka.Logger.NLog.Tests
             loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            for (var i = 0; i < 100; ++i)
-            {
-                if (loggingTarget.Logs.Count != 0)
-                    break;
-
-                Thread.Sleep(10);
-            }
+            AwaitCondition(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
 
             Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(resultStr, loggingTarget.Logs.Last());
+            Assert.Equal(resultStr, loggingTarget.Logs.First());
         }
 
         [Theory]
@@ -68,19 +63,13 @@ namespace Akka.Logger.NLog.Tests
             loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            for (var i = 0; i < 100; ++i)
-            {
-                if (loggingTarget.Logs.Count != 0)
-                    break;
-
-                Thread.Sleep(10);
-            }
+            AwaitCondition(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
 
             var formattedResultString = string.Format(resultStr, LogSourceName,
                 Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(4, '0'));
 
             Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(formattedResultString, loggingTarget.Logs.Last());
+            Assert.Equal(formattedResultString, loggingTarget.Logs.First());
         }
 
         [Theory]
@@ -93,18 +82,12 @@ namespace Akka.Logger.NLog.Tests
             loggingTarget.Logs.Clear();
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            for (var i = 0; i < 100; ++i)
-            {
-                if (loggingTarget.Logs.Count != 0)
-                    break;
-
-                Thread.Sleep(10);
-            }
+            AwaitCondition(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
 
             var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, Thread.CurrentThread.ManagedThreadId.ToString());
 
             Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(formattedResultString, loggingTarget.Logs.Last());
+            Assert.Equal(formattedResultString, loggingTarget.Logs.First());
         }
     }
 }
