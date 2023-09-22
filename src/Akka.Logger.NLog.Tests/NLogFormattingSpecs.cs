@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
@@ -49,9 +47,9 @@ namespace Akka.Logger.NLog.Tests
             var loggingTarget = new MemoryTarget { Layout = "${level}|${message}" };
             LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            _loggingAdapter.Log(level, formatStr, formatArgs);
-
-            AssertLogMessage(loggingTarget, resultStr, 5.Seconds()).Should().BeTrue();
+            AssertLogMessage(
+                () => _loggingAdapter.Log(level, formatStr, formatArgs), 
+                loggingTarget, resultStr, 5.Seconds()).Should().BeTrue();
         }
 
         [Theory]
@@ -62,12 +60,12 @@ namespace Akka.Logger.NLog.Tests
                 {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId:format=D4}|${message}" };
             LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            _loggingAdapter.Log(level, formatStr, formatArgs);
-            
             var formattedResultString = string.Format(resultStr, LogSourceName, 
                 Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(4, '0'));
             
-            AssertLogMessage(loggingTarget, formattedResultString, 5.Seconds()).Should().BeTrue();
+            AssertLogMessage(
+                () => _loggingAdapter.Log(level, formatStr, formatArgs),
+                loggingTarget, formattedResultString, 5.Seconds()).Should().BeTrue();
         }
 
         [Theory]
@@ -77,18 +75,21 @@ namespace Akka.Logger.NLog.Tests
             var loggingTarget = new MemoryTarget { Layout = "${message:raw=true}|${all-event-properties}" };
             LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            _loggingAdapter.Log(level, formatStr, formatArgs);
-
-            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, Thread.CurrentThread.ManagedThreadId.ToString());
-            AssertLogMessage(loggingTarget, formattedResultString, 5.Seconds()).Should().BeTrue();
+            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, 
+                Thread.CurrentThread.ManagedThreadId.ToString());
+            AssertLogMessage(
+                () => _loggingAdapter.Log(level, formatStr, formatArgs), 
+                loggingTarget, formattedResultString, 5.Seconds()).Should().BeTrue();
         }
 
-        private bool AssertLogMessage(MemoryTarget target, string expected, TimeSpan timeout)
+        private bool AssertLogMessage(Action logAction, MemoryTarget target, string expected, TimeSpan timeout)
         {
+            Output.WriteLine($"Expected: {expected}");
             var stopwatch = Stopwatch.StartNew();
             while (stopwatch.Elapsed < timeout)
             {
-                Thread.Sleep(10);
+                logAction();
+                Thread.Sleep(100);
                 
                 string[] array;
                 lock (_lock)
@@ -97,8 +98,12 @@ namespace Akka.Logger.NLog.Tests
                     target.Logs.Clear();
                 }
 
-                if (array.Any(s => s.Equals(expected)))
-                    return true;
+                foreach (var s in array)
+                {
+                    Output.WriteLine($"Logged: {s}");
+                    if (s.Equals(expected))
+                        return true;
+                }
             }
             return false;
         }
