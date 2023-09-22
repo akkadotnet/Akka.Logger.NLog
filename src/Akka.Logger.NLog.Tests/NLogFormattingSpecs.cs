@@ -1,13 +1,16 @@
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
 using FluentAssertions.Extensions;
 using NLog;
+using NLog.Targets;
 using Xunit;
 using Xunit.Abstractions;
 using LogLevel = Akka.Event.LogLevel;
+using FluentAssertions;
 
 namespace Akka.Logger.NLog.Tests
 {
@@ -37,57 +40,65 @@ namespace Akka.Logger.NLog.Tests
         [InlineData(LogLevel.InfoLevel, "test case {a}", new object[] { 1 }, "Info|test case 1")]
         [InlineData(LogLevel.WarningLevel, "test case {b}", new object[] { "2" }, "Warn|test case \"2\"")]
         [InlineData(LogLevel.ErrorLevel, "test case {c}", new object[] { 3.0 }, "Error|test case 3")]
-        public void LoggingTest(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
+        public async Task LoggingTest(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
-            var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${level}|${message}" };
+            var loggingTarget = new MemoryTarget { Layout = "${level}|${message}" };
             LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            loggingTarget.Logs.Clear();
+            await WaitForRadioSilence(loggingTarget);
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            AwaitCondition(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
+            await AwaitConditionAsync(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
 
-            Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(resultStr, loggingTarget.Logs.First());
+            loggingTarget.Logs.Should().NotBeEmpty();
+            loggingTarget.Logs.First().Should().Be(resultStr);
         }
 
         [Theory]
         [InlineData(LogLevel.InfoLevel, "test case {0}", new object[] { 1 }, "{0}|{1}|test case 1")]
-        public void LoggingTestWithEventProperties(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
+        public async Task LoggingTestWithEventProperties(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
             _loggingAdapter.Log(level, formatStr, formatArgs);
-            var loggingTarget = new global::NLog.Targets.MemoryTarget
+            var loggingTarget = new MemoryTarget
                 {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId:format=D4}|${message}" };
             LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            loggingTarget.Logs.Clear();
+            await WaitForRadioSilence(loggingTarget);
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            AwaitCondition(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
+            await AwaitConditionAsync(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
 
-            var formattedResultString = string.Format(resultStr, LogSourceName,
-                Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(4, '0'));
+            var formattedResultString = string.Format(resultStr, LogSourceName, "*");
 
-            Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(formattedResultString, loggingTarget.Logs.First());
+            loggingTarget.Logs.Should().NotBeEmpty();
+            loggingTarget.Logs.First().Should().Match(formattedResultString);
         }
 
         [Theory]
         [InlineData(LogLevel.InfoLevel, "test {color} case", new object[] { "Red" }, "test {{color}} case|color=Red, logSource={0}, actorPath={1}, threadId={2}")]
-        public void LoggingWithStructuredLogging(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
+        public async Task LoggingWithStructuredLogging(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
             var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${message:raw=true}|${all-event-properties}" };
             LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            loggingTarget.Logs.Clear();
+            await WaitForRadioSilence(loggingTarget);
             _loggingAdapter.Log(level, formatStr, formatArgs);
 
-            AwaitCondition(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
+            await AwaitConditionAsync(() => loggingTarget.Logs.Count != 0, 3.Seconds(), 10.Milliseconds());
 
-            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, Thread.CurrentThread.ManagedThreadId.ToString());
+            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, "*");
 
-            Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(formattedResultString, loggingTarget.Logs.First());
+            loggingTarget.Logs.Should().NotBeEmpty();
+            loggingTarget.Logs.First().Should().Match(formattedResultString);
+        }
+
+        private static async Task WaitForRadioSilence(MemoryTarget target)
+        {
+            while (target.Logs.Count > 0)
+            {
+                target.Logs.Clear();
+                await Task.Delay(1000);
+            }
         }
     }
 }
