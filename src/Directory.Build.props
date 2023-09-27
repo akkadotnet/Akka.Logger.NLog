@@ -1,0 +1,39 @@
+<Project>
+  <PropertyGroup>
+    <Copyright>Copyright © 2013-2023 Akka.NET Contrib Team</Copyright>
+    <Authors>Akka.NET Contrib Team</Authors>
+    <PackageReleaseNotes>[Upgrade Akka.NET to v1.5.0](https://github.com/akkadotnet/akka.net/releases/tag/1.5.0)
+[Bump NLog to 5.1.2](https://github.com/akkadotnet/Akka.Logger.NLog/pull/133)</PackageReleaseNotes>
+    <VersionPrefix>1.5.0</VersionPrefix>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NetFrameworkTestVersion>net471</NetFrameworkTestVersion>
+    <NetCoreTestVersion>netcoreapp3.1</NetCoreTestVersion>
+    <NetTestVersion>net7.0</NetTestVersion>
+  </PropertyGroup>
+  <!-- GitHub SourceLink -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
+  <!-- NuGet package properties -->
+  <PropertyGroup>
+    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageProjectUrl>https://github.com/akkadotnet/akka.logger.nlog</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>akka;actors;actor model;Akka;concurrency;nlog</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
+    <None Include="../../docs/images/icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

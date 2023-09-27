@@ -1,8 +1,14 @@
+using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
+using FluentAssertions;
+using FluentAssertions.Extensions;
+using NLog;
+using NLog.Targets;
 using Xunit;
 using Xunit.Abstractions;
 using LogLevel = Akka.Event.LogLevel;
@@ -11,9 +17,10 @@ namespace Akka.Logger.NLog.Tests
 {
     public class NLogFormattingSpecs : TestKit.Xunit2.TestKit
     {
-        private static readonly Config Config = @"akka.loglevel = DEBUG";
+        private static readonly Config Config = "akka.loglevel = DEBUG";
 
         private readonly ILoggingAdapter _loggingAdapter;
+        private readonly object _lock = new ();
         const string LogSourceName = "my-test-system";
 
         public NLogFormattingSpecs(ITestOutputHelper helper) : base(Config, output: helper)
@@ -37,73 +44,68 @@ namespace Akka.Logger.NLog.Tests
         [InlineData(LogLevel.ErrorLevel, "test case {c}", new object[] { 3.0 }, "Error|test case 3")]
         public void LoggingTest(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
-            var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${level}|${message}" };
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+            var loggingTarget = new MemoryTarget { Layout = "${level}|${message}" };
+            LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            loggingTarget.Logs.Clear();
-            _loggingAdapter.Log(level, formatStr, formatArgs);
-
-            for (var i = 0; i < 100; ++i)
-            {
-                if (loggingTarget.Logs.Count != 0)
-                    break;
-
-                Thread.Sleep(10);
-            }
-
-            Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(resultStr, loggingTarget.Logs.Last());
+            AssertLogMessage(
+                () => _loggingAdapter.Log(level, formatStr, formatArgs), 
+                loggingTarget, resultStr, 5.Seconds()).Should().BeTrue();
         }
 
         [Theory]
         [InlineData(LogLevel.InfoLevel, "test case {0}", new object[] { 1 }, "{0}|{1}|test case 1")]
         public void LoggingTestWithEventProperties(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
-            _loggingAdapter.Log(level, formatStr, formatArgs);
-            var loggingTarget = new global::NLog.Targets.MemoryTarget
+            var loggingTarget = new MemoryTarget
                 {Layout = "${event-properties:item=logSource}|${event-properties:item=threadId:format=D4}|${message}" };
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+            LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            loggingTarget.Logs.Clear();
-            _loggingAdapter.Log(level, formatStr, formatArgs);
-
-            for (var i = 0; i < 100; ++i)
-            {
-                if (loggingTarget.Logs.Count != 0)
-                    break;
-
-                Thread.Sleep(10);
-            }
-
-            var formattedResultString = string.Format(resultStr, LogSourceName,
+            var formattedResultString = string.Format(resultStr, LogSourceName, 
                 Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(4, '0'));
-
-            Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(formattedResultString, loggingTarget.Logs.Last());
+            
+            AssertLogMessage(
+                () => _loggingAdapter.Log(level, formatStr, formatArgs),
+                loggingTarget, formattedResultString, 5.Seconds()).Should().BeTrue();
         }
 
         [Theory]
         [InlineData(LogLevel.InfoLevel, "test {color} case", new object[] { "Red" }, "test {{color}} case|color=Red, logSource={0}, actorPath={1}, threadId={2}")]
         public void LoggingWithStructuredLogging(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
-            var loggingTarget = new global::NLog.Targets.MemoryTarget { Layout = "${message:raw=true}|${all-event-properties}" };
-            global::NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(loggingTarget);
+            var loggingTarget = new MemoryTarget { Layout = "${message:raw=true}|${all-event-properties}" };
+            LogManager.Setup().LoadConfiguration(c => c.ForLogger().WriteTo(loggingTarget));
 
-            loggingTarget.Logs.Clear();
-            _loggingAdapter.Log(level, formatStr, formatArgs);
+            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path, 
+                Thread.CurrentThread.ManagedThreadId.ToString());
+            AssertLogMessage(
+                () => _loggingAdapter.Log(level, formatStr, formatArgs), 
+                loggingTarget, formattedResultString, 5.Seconds()).Should().BeTrue();
+        }
 
-            for (var i = 0; i < 100; ++i)
+        private bool AssertLogMessage(Action logAction, MemoryTarget target, string expected, TimeSpan timeout)
+        {
+            Output.WriteLine($"Expected: {expected}");
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.Elapsed < timeout)
             {
-                if (loggingTarget.Logs.Count != 0)
-                    break;
+                logAction();
+                Thread.Sleep(100);
+                
+                string[] array;
+                lock (_lock)
+                {
+                    array = target.Logs.ToArray();
+                    target.Logs.Clear();
+                }
 
-                Thread.Sleep(10);
+                foreach (var s in array)
+                {
+                    Output.WriteLine($"Logged: {s}");
+                    if (s.Equals(expected))
+                        return true;
+                }
             }
-
-            var formattedResultString = string.Format(resultStr, LogSourceName, TestActor.Path.ToString(), Thread.CurrentThread.ManagedThreadId.ToString());
-
-            Assert.NotEmpty(loggingTarget.Logs);
-            Assert.Equal(formattedResultString, loggingTarget.Logs.Last());
+            return false;
         }
     }
 }

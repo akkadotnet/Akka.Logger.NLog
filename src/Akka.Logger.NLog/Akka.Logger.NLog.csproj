@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-<Import Project="..\common.props" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>NLog logging adapter for Akka.NET.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Akka" Version="$(AkkaVersion)" />
-    <PackageReference Include="NLog" Version="$(NLogVersion)" />
+    <PackageReference Include="Akka" />
+    <PackageReference Include="NLog" />
   </ItemGroup>
 </Project>
