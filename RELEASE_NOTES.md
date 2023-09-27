@@ -1,3 +1,8 @@
+#### 1.5.13 September 27 2023 ####
+
+* [Upgrade Akka.NET to v1.5.13](https://github.com/akkadotnet/akka.net/releases/tag/1.5.13)
+* [Bump NLog to 5.2.4](https://github.com/akkadotnet/Akka.Logger.NLog/pull/171)
+
 #### 1.5.0 March 6 2023 ####
 
 * [Upgrade Akka.NET to v1.5.0](https://github.com/akkadotnet/akka.net/releases/tag/1.5.0)
