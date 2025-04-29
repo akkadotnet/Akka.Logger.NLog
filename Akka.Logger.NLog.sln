@@ -25,22 +25,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{519B
 		scripts\getReleaseNotes.ps1 = scripts\getReleaseNotes.ps1
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{148980CB-16E8-49D5-B845-571400287DC5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build-system", "build-system", "{20ECC18B-22D4-40AA-A491-22121ACD985A}"
 	ProjectSection(SolutionItems) = preProject
-		.github\dependabot.yml = .github\dependabot.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F887CAD6-6D56-4631-A4A4-AE2A35D2FCD6}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\pr_validation.yml = .github\workflows\pr_validation.yml
-		.github\workflows\publish_nuget.yml = .github\workflows\publish_nuget.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure", ".azure", "{851A62B8-1B9B-458C-BEFB-B22ABFA3DC8D}"
-	ProjectSection(SolutionItems) = preProject
-		.azure\azure-pipeline.template.yaml = .azure\azure-pipeline.template.yaml
-		.azure\pr-validation.yaml = .azure\pr-validation.yaml
-		.azure\windows-release.yaml = .azure\windows-release.yaml
+		build-system\README.md = build-system\README.md
+		build-system\azure-pipeline.template.yaml = build-system\azure-pipeline.template.yaml
+		build-system\pr-validation.yaml = build-system\pr-validation.yaml
+		build-system\windows-release.yaml = build-system\windows-release.yaml
+		build-system\nightly-builds.yaml = build-system\nightly-builds.yaml
 	EndProjectSection
 EndProject
 Global
@@ -66,8 +57,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{519BA4A5-2081-4D8B-AC96-70EC04591BB6} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
-		{148980CB-16E8-49D5-B845-571400287DC5} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
-		{F887CAD6-6D56-4631-A4A4-AE2A35D2FCD6} = {148980CB-16E8-49D5-B845-571400287DC5}
-		{851A62B8-1B9B-458C-BEFB-B22ABFA3DC8D} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
+		{20ECC18B-22D4-40AA-A491-22121ACD985A} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
 	EndGlobalSection
 EndGlobal

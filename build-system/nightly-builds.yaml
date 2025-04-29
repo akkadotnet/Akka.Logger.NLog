@@ -1,0 +1,38 @@
+# Release task for PbLib projects
+# See https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema for reference
+
+pool:
+  vmImage: windows-latest
+  demands: Cmd
+
+trigger: none
+pr: none
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - dev
+
+variables:
+  - group: nugetKeys #create this group with SECRET variables `nugetKey`
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET'
+    inputs:
+      packageType: 'sdk'
+      useGlobalJson: true
+      
+  - powershell: ./build.ps1
+    displayName: 'Update Release Notes'
+    
+    # Pack with version suffix for nightly builds
+  - powershell: |
+      $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+      dotnet pack -c Release -p:VersionSuffix=beta$timestamp -o $(Build.ArtifactStagingDirectory)/nuget
+    displayName: 'Create packages'
+
+  - script: dotnet nuget push "$(Build.ArtifactStagingDirectory)\nuget\*.nupkg" --api-key $(nightlyKey) --source $(nightlyUrl) --skip-duplicate
+    displayName: 'Publish to Nightly Feed'
