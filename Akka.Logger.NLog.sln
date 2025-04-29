@@ -7,23 +7,40 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Logger.NLog", "src\Akk
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BB691E2E-B766-4EAA-8592-3129F83ACA9F}"
 	ProjectSection(SolutionItems) = preProject
-		build.fsx = build.fsx
 		build.ps1 = build.ps1
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
-		src\Directory.Build.props = src\Directory.Build.props
-		src\Directory.Packages.props = src\Directory.Packages.props
+		coverlet.runsettings = coverlet.runsettings
+		global.json = global.json
+		NuGet.Config = NuGet.Config
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Logger.NLog.Tests", "src\Akka.Logger.NLog.Tests\Akka.Logger.NLog.Tests.csproj", "{32923A88-E86B-4E73-9621-E7599DF36E5F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build-system", "build-system", "{FF62B97F-40AF-4A44-AF1B-F89DA9000B4A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{519BA4A5-2081-4D8B-AC96-70EC04591BB6}"
 	ProjectSection(SolutionItems) = preProject
-		build-system\azure-pipeline.template.yaml = build-system\azure-pipeline.template.yaml
-		build-system\nightly-builds.yaml = build-system\nightly-builds.yaml
-		build-system\pr-validation.yaml = build-system\pr-validation.yaml
-		build-system\README.md = build-system\README.md
-		build-system\windows-release.yaml = build-system\windows-release.yaml
+		scripts\bumpVersion.ps1 = scripts\bumpVersion.ps1
+		scripts\getReleaseNotes.ps1 = scripts\getReleaseNotes.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{148980CB-16E8-49D5-B845-571400287DC5}"
+	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F887CAD6-6D56-4631-A4A4-AE2A35D2FCD6}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\pr_validation.yml = .github\workflows\pr_validation.yml
+		.github\workflows\publish_nuget.yml = .github\workflows\publish_nuget.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".azure", ".azure", "{851A62B8-1B9B-458C-BEFB-B22ABFA3DC8D}"
+	ProjectSection(SolutionItems) = preProject
+		.azure\azure-pipeline.template.yaml = .azure\azure-pipeline.template.yaml
+		.azure\pr-validation.yaml = .azure\pr-validation.yaml
+		.azure\windows-release.yaml = .azure\windows-release.yaml
 	EndProjectSection
 EndProject
 Global
@@ -48,6 +65,9 @@ Global
 		SolutionGuid = {E6D29FE3-301D-4898-BD68-BFA6785695BB}
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{FF62B97F-40AF-4A44-AF1B-F89DA9000B4A} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
+		{519BA4A5-2081-4D8B-AC96-70EC04591BB6} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
+		{148980CB-16E8-49D5-B845-571400287DC5} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
+		{F887CAD6-6D56-4631-A4A4-AE2A35D2FCD6} = {148980CB-16E8-49D5-B845-571400287DC5}
+		{851A62B8-1B9B-458C-BEFB-B22ABFA3DC8D} = {BB691E2E-B766-4EAA-8592-3129F83ACA9F}
 	EndGlobalSection
 EndGlobal
