@@ -9,9 +9,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <NetFrameworkTestVersion>net471</NetFrameworkTestVersion>
-    <NetCoreTestVersion>netcoreapp3.1</NetCoreTestVersion>
-    <NetTestVersion>net7.0</NetTestVersion>
+    <NetFrameworkTestVersion>net48</NetFrameworkTestVersion>
+    <NetTestVersion>net8.0</NetTestVersion>
   </PropertyGroup>
   <!-- GitHub SourceLink -->
   <ItemGroup>
