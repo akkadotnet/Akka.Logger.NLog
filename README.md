@@ -1,5 +1,5 @@
 # Akka.Logger.NLog
-[![Build status](https://dev.azure.com/dotnet/Akka.NET/_apis/build/status/121)](https://dev.azure.com/dotnet/Akka.NET/_build?definitionId=121) [![NuGet Version](http://img.shields.io/nuget/v/Akka.Logger.NLog.svg?style=flat)](https://www.nuget.org/packages/Akka.Logger.NLog/)
+[![Build status](https://dev.azure.com/dotnet/Akka.NET/_apis/build/status/189)](https://dev.azure.com/dotnet/Akka.NET/_build?definitionId=189) [![NuGet Version](http://img.shields.io/nuget/v/Akka.Logger.NLog.svg?style=flat)](https://www.nuget.org/packages/Akka.Logger.NLog/)
 
 This is the NLog integration plugin for Akka.NET.
 
