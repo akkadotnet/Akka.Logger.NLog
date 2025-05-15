@@ -57,7 +57,7 @@ namespace Akka.Logger.NLog
                 return;
             
             var logEventInfo = logEvent.Message is LogMessage logMessage ?
-                new LogEventInfo(level, logger.Name, null, logMessage.Format, logMessage.Parameters().ToArray(), exception) :
+                new LogEventInfo(level, logger.Name, null, logMessage.Format, GetLogMessageParameterArray(logMessage), exception) :
                 new LogEventInfo(level, logger.Name, null, "{0}", new object[] { logEvent.Message.ToString() }, exception);
             if (logEventInfo.TimeStamp.Kind == logEvent.Timestamp.Kind)
                 logEventInfo.TimeStamp = logEvent.Timestamp;            // Timestamp of original LogEvent (instead of async Logger thread timestamp)
@@ -65,6 +65,12 @@ namespace Akka.Logger.NLog
             logEventInfo.Properties["actorPath"] = Context?.Sender?.Path?.ToString() ?? string.Empty;   // Same as Serilog
             logEventInfo.Properties["threadId"] = logEvent.Thread.ManagedThreadId;  // ThreadId of the original LogEvent (instead of async Logger threadid)
             logger.Log(logEventInfo);
+        }
+
+        private static object[] GetLogMessageParameterArray(LogMessage logMessage)
+        {
+            var parameters = logMessage.Parameters();
+            return parameters is object[] parameterArray ? parameterArray : parameters?.ToArray();
         }
     }
 }

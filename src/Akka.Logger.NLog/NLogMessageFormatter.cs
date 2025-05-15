@@ -6,23 +6,21 @@ using NLogLevel = global::NLog.LogLevel;
 
 namespace Akka.Logger.NLog
 {
-    /// <inheritdoc />
     /// <summary>
     /// This class contains methods used to convert MessageTemplated messages
     /// into normal text messages.
     /// </summary>
+    /// <remarks>
+    /// You need to enable the Akka.Logger.NLog.NLogMessageFormatter across your entire ActorSystem - this will replace Akka.NET's default ILogMessageFormatter with NLog's.
+    /// 
+    /// You can accomplish this by setting the akka.logger-formatter setting like below:
+    /// <code>
+    /// akka.logger-formatter="Akka.Logger.NLog.NLogMessageFormatter, Akka.Logger.NLog"
+    /// </code>
+    /// </remarks>
     public class NLogMessageFormatter : ILogMessageFormatter
     {
-        /// <summary>
-        /// Converts the specified template string to a text string using the specified
-        /// token array to match replacements.
-        /// </summary>
-        /// <param name="format">The template string used in the conversion.</param>
-        /// <param name="args">The array that contains values to replace in the template.</param>
-        /// <returns>
-        /// A text string where the template placeholders have been replaced with
-        /// their corresponding values.
-        /// </returns>
+        /// <inheritdoc />
         public string Format(string format, params object[] args)
         {
             if (args?.Length > 0)
@@ -32,6 +30,7 @@ namespace Akka.Logger.NLog
             return format;
         }
 
+        /// <inheritdoc />
         public string Format(string format, IEnumerable<object> args)
             => Format(format, args.ToArray());
     }
