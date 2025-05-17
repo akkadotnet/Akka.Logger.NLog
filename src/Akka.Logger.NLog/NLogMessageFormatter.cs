@@ -32,6 +32,9 @@ namespace Akka.Logger.NLog
 
         /// <inheritdoc />
         public string Format(string format, IEnumerable<object> args)
-            => Format(format, args.ToArray());
+        {
+            var parameterArray = args as object[] ?? args?.ToArray();
+            return Format(format, parameterArray);
+        }
     }
 }
