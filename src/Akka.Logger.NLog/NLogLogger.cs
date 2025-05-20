@@ -26,24 +26,15 @@ namespace Akka.Logger.NLog
     {
         private readonly ILoggingAdapter _log = Logging.GetLogger(Context.System.EventStream, "NLogLogger");
 
-        private static void Log(LogEvent logEvent, Action<NLogger, LogEvent> logStatement)
-        {
-            var loggerName = (logEvent.LogClass == typeof(DummyClassForStringSources) || logEvent.LogClass.GenericTypeArguments?.Length != 0)
-                ? logEvent.LogSource
-                : logEvent.LogClass.ToString(); // Include full namespace, but not assembly name
-            var logger = LogManager.GetLogger(loggerName);
-            logStatement(logger, logEvent);
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="NLogLogger"/> class.
         /// </summary>
         public NLogLogger()
         {
-            Receive<Error>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Error, logEvent.Cause, logEvent)));
-            Receive<Warning>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Warn, logEvent.Cause, logEvent)));
-            Receive<Info>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Info, logEvent.Cause, logEvent)));
-            Receive<Debug>(m => Log(m, (logger, logEvent) => LogEvent(logger, NLogLevel.Debug, logEvent.Cause, logEvent)));
+            Receive<Error>(static evt => LogEvent(evt, NLogLevel.Error));
+            Receive<Warning>(static evt => LogEvent(evt, NLogLevel.Warn));
+            Receive<Info>(static evt => LogEvent(evt, NLogLevel.Info));
+            Receive<Debug>(static evt => LogEvent(evt, NLogLevel.Debug));
             Receive<InitializeLogger>(m =>
             {
                 _log.Info("NLogLogger started");
@@ -51,26 +42,36 @@ namespace Akka.Logger.NLog
             });
         }
 
-        private static void LogEvent(NLogger logger, NLogLevel level, Exception exception, LogEvent logEvent)
+        private static void LogEvent(LogEvent logEvent, NLogLevel logLevel)
         {
-            if (!logger.IsEnabled(level)) 
+            var loggerName = (logEvent.LogClass == typeof(DummyClassForStringSources) || logEvent.LogClass.GenericTypeArguments?.Length != 0)
+                ? logEvent.LogSource
+                : logEvent.LogClass.ToString(); // Include full namespace, but not assembly name
+            var logger = LogManager.GetLogger(loggerName);
+            if (!logger.IsEnabled(logLevel))
                 return;
-            
-            var logEventInfo = logEvent.Message is LogMessage logMessage ?
-                new LogEventInfo(level, logger.Name, null, logMessage.Format, GetLogMessageParameterArray(logMessage), exception) :
-                new LogEventInfo(level, logger.Name, null, "{0}", new object[] { logEvent.Message.ToString() }, exception);
+
+            LogEventInfo logEventInfo = CreateLogEventInfo(logger, logLevel, logEvent);
             if (logEventInfo.TimeStamp.Kind == logEvent.Timestamp.Kind)
                 logEventInfo.TimeStamp = logEvent.Timestamp;            // Timestamp of original LogEvent (instead of async Logger thread timestamp)
             logEventInfo.Properties["logSource"] = logEvent.LogSource;
-            logEventInfo.Properties["actorPath"] = Context?.Sender?.Path?.ToString() ?? string.Empty;   // Same as Serilog
+            var actorPath = Context?.Sender?.Path?.ToString();
+            if (!string.IsNullOrEmpty(actorPath))
+                logEventInfo.Properties["actorPath"] = actorPath;   // Same as Serilog
             logEventInfo.Properties["threadId"] = logEvent.Thread.ManagedThreadId;  // ThreadId of the original LogEvent (instead of async Logger threadid)
             logger.Log(logEventInfo);
         }
 
-        private static object[] GetLogMessageParameterArray(LogMessage logMessage)
+        private static LogEventInfo CreateLogEventInfo(NLogger logger, NLogLevel level, LogEvent logEvent)
         {
-            var parameters = logMessage.Parameters();
-            return parameters is object[] parameterArray ? parameterArray : parameters?.ToArray();
+            if (logEvent.Message is LogMessage logMessage)
+            {
+                var parameters = logMessage.Parameters();
+                var parameterArray = parameters as object[] ?? parameters?.ToArray();
+                return new LogEventInfo(level, logger.Name, null, logMessage.Format, parameterArray, logEvent.Cause);
+            }
+
+            return new LogEventInfo(level, logger.Name, null, "{0}", new object[] { logEvent.Message }, logEvent.Cause);
         }
     }
 }
