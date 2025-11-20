@@ -11,10 +11,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Akka.TestKit.Xunit2" />
+    <PackageReference Include="FluentAssertions" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akka" VersionOverride="1.5.46" />
+    <PackageReference Include="Akka" VersionOverride="1.5.56" />
     <ProjectReference Include="..\Akka.Logger.NLog\Akka.Logger.NLog.csproj" />
   </ItemGroup>
 
