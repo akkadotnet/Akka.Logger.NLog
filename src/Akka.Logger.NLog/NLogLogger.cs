@@ -54,11 +54,24 @@ namespace Akka.Logger.NLog
             LogEventInfo logEventInfo = CreateLogEventInfo(logger, logLevel, logEvent);
             if (logEventInfo.TimeStamp.Kind == logEvent.Timestamp.Kind)
                 logEventInfo.TimeStamp = logEvent.Timestamp;            // Timestamp of original LogEvent (instead of async Logger thread timestamp)
+
+            // Add Akka metadata properties
             logEventInfo.Properties["logSource"] = logEvent.LogSource;
             var actorPath = Context?.Sender?.Path?.ToString();
             if (!string.IsNullOrEmpty(actorPath))
                 logEventInfo.Properties["actorPath"] = actorPath;   // Same as Serilog
             logEventInfo.Properties["threadId"] = logEvent.Thread.ManagedThreadId;  // ThreadId of the original LogEvent (instead of async Logger threadid)
+
+            // Add structured logging properties from semantic logging
+            // This enables NLog layouts and targets to access structured properties by name
+            if (logEvent.TryGetProperties(out var properties))
+            {
+                foreach (var prop in properties)
+                {
+                    logEventInfo.Properties[prop.Key] = prop.Value;
+                }
+            }
+
             logger.Log(logEventInfo);
         }
 
