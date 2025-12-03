@@ -11,11 +11,18 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Akka.TestKit.Xunit2" />
+    <PackageReference Include="FluentAssertions" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akka" VersionOverride="1.5.46" />
+    <PackageReference Include="Akka" />
     <ProjectReference Include="..\Akka.Logger.NLog\Akka.Logger.NLog.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

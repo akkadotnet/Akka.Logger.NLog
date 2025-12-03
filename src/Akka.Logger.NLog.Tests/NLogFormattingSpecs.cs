@@ -8,6 +8,7 @@ using Akka.Event;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NLog;
+using NLog.Config;
 using NLog.Targets;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,6 +26,11 @@ namespace Akka.Logger.NLog.Tests
 
         public NLogFormattingSpecs(ITestOutputHelper helper) : base(Config, output: helper)
         {
+            var target = new TestOutputTarget(helper);
+            var config = new LoggingConfiguration();
+            config.AddRuleForAllLevels(target);
+            LogManager.Configuration = config;
+                
             Config myConfig = @"akka.loglevel = DEBUG
                     akka.loggers=[""Akka.Logger.NLog.NLogLogger, Akka.Logger.NLog""]";
 
