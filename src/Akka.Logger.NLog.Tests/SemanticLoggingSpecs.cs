@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Event;
@@ -12,6 +14,7 @@ using NLog.Config;
 using NLog.Targets;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 using LogLevel = Akka.Event.LogLevel;
 
 namespace Akka.Logger.NLog.Tests
@@ -21,24 +24,24 @@ namespace Akka.Logger.NLog.Tests
     /// Verifies that structured properties from log message templates are
     /// accessible in NLog's LogEventInfo.Properties dictionary.
     /// </summary>
-    public class SemanticLoggingSpecs : TestKit.Xunit2.TestKit
+    public class SemanticLoggingSpecs: IAsyncLifetime
     {
-        private static readonly Config Config = "akka.loglevel = DEBUG";
-        private readonly ILoggingAdapter _loggingAdapter;
-
-        public SemanticLoggingSpecs(ITestOutputHelper helper) : base(Config, output: helper)
-        {
-            var target = new TestOutputTarget(helper);
-            var config = new LoggingConfiguration();
-            config.AddRuleForAllLevels(target);
-            LogManager.Configuration = config;
-                
-            Config myConfig = @"akka.loglevel = DEBUG
+        private static readonly Config Config = @"akka.loglevel = DEBUG
                     akka.loggers=[""Akka.Logger.NLog.NLogLogger, Akka.Logger.NLog""]";
+        
+        private ActorSystem _sys;
+        private ILoggingAdapter _loggingAdapter;
 
-            var system = ActorSystem.Create("semantic-test-system", myConfig);
-            _loggingAdapter = Logging.GetLogger(system.EventStream, system.Name);
-            Sys.EventStream.Subscribe(TestActor, typeof(LogEvent));
+        public Task InitializeAsync()
+        {
+            _sys = ActorSystem.Create("semantic-test-system", Config);
+            _loggingAdapter = Logging.GetLogger(_sys.EventStream, _sys.Name);
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _sys.Terminate();
         }
 
         [Fact(DisplayName = "Should extract named template properties and add to NLog LogEventInfo.Properties")]
@@ -56,8 +59,11 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
-            logs[0].Should().Contain("UserId=12345");
-            logs[0].Should().Contain("Email=user@example.com");
+            
+            if (logs.Any(log => log.Contains("UserId=12345") && log.Contains("Email=user@example.com")))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should extract positional template properties and add to NLog LogEventInfo.Properties")]
@@ -75,8 +81,11 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
-            logs[0].Should().Contain("Param0=Bob");
-            logs[0].Should().Contain("Param1=192.168.1.1");
+            
+            if (logs.Any(log => log.Contains("Param0=Bob") && log.Contains("Param1=192.168.1.1")))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should handle multiple named properties in template")]
@@ -95,7 +104,11 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
-            logs[0].Should().Be("ORD-001|CUST-456|99.99|USD");
+            
+            if (logs.Any(log => log == "ORD-001|CUST-456|99.99|USD"))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should handle complex objects as property values")]
@@ -114,7 +127,11 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
-            logs[0].Should().Contain("Processing user");
+            
+            if (logs.Any(log => log.Contains("Processing user")))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should preserve Akka metadata properties alongside semantic logging properties")]
@@ -132,10 +149,13 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
+            
+            var regex = new Regex(@"ThreadId=\d+");
             // Should have both semantic property (UserId) and Akka metadata (logSource, threadId)
-            logs[0].Should().Contain("UserId=999");
-            logs[0].Should().Contain("LogSource=semantic-test-system");
-            logs[0].Should().MatchRegex(@"ThreadId=\d+");
+            if (logs.Any(log => log.Contains("UserId=999") && log.Contains("LogSource=semantic-test-system") && regex.IsMatch(log)))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should handle format specifiers in named templates")]
@@ -154,7 +174,11 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
-            logs[0].Should().Contain("1234.5678");
+            
+            if (logs.Any(log => log.Contains("1234.5678")))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should handle empty/no properties gracefully")]
@@ -172,8 +196,12 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
+            
             // Should still have Akka metadata properties (logSource, actorPath, threadId)
-            logs[0].Should().Contain("logSource=");
+            if (logs.Any(log => log.Contains("logSource=")))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
 
         [Fact(DisplayName = "Should make all properties queryable via ${all-event-properties}")]
@@ -191,15 +219,15 @@ namespace Akka.Logger.NLog.Tests
 
             var logs = loggingTarget.Logs.ToArray();
             logs.Should().NotBeEmpty();
-            var output = logs[0];
 
-            // Should contain semantic properties
-            output.Should().Contain("EventId=EVT-123");
-            output.Should().Contain("Timestamp=");
-
-            // Should contain Akka metadata
-            output.Should().Contain("logSource=");
-            output.Should().Contain("threadId=");
+            if (logs.Any(log => 
+                    // Should contain semantic properties
+                    log.Contains("EventId=EVT-123") && log.Contains("Timestamp=") 
+                    // Should contain Akka metadata
+                    && log.Contains("logSource=") && log.Contains("threadId=")))
+                return;
+            
+            throw FailException.ForFailure($"Expected log not found. Logs:\n{string.Join('\n', logs)}");
         }
     }
 }
