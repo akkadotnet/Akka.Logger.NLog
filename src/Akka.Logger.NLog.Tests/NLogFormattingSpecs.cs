@@ -46,7 +46,7 @@ namespace Akka.Logger.NLog.Tests
         [InlineData(LogLevel.WarningLevel, "test case {0}", new object[] { "2" }, "Warn|test case 2")]
         [InlineData(LogLevel.ErrorLevel, "test case {0}", new object[] { 3.0 }, "Error|test case 3")]
         [InlineData(LogLevel.InfoLevel, "test case {a}", new object[] { 1 }, "Info|test case 1")]
-        [InlineData(LogLevel.WarningLevel, "test case {b}", new object[] { "2" }, "Warn|test case \"2\"")]
+        [InlineData(LogLevel.WarningLevel, "test case {b}", new object[] { "2" }, "Warn|test case 2")]
         [InlineData(LogLevel.ErrorLevel, "test case {c}", new object[] { 3.0 }, "Error|test case 3")]
         public void LoggingTest(LogLevel level, string formatStr, object[] formatArgs, string resultStr)
         {
