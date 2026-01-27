@@ -1,3 +1,8 @@
+#### 1.5.59 January 26th 2026 ####
+
+**Dependency Updates**
+* [Upgraded to Akka.NET v1.5.59](https://github.com/akkadotnet/akka.net/releases/tag/1.5.59)
+
 #### 1.5.57-beta2 December 4th 2025 ####
 
 **New Features**
