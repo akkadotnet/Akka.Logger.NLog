@@ -1,3 +1,11 @@
+#### 1.5.60 February 10th 2026 ####
+
+**New Features**
+* [Verified `WithContext()` logging context enrichment support](https://github.com/akkadotnet/akka.logger.nlog/pull/249) - Akka.NET 1.5.60's `WithContext()` API flows context properties through to NLog `LogEventInfo.Properties` automatically. No code changes were needed -- NLog already called `TryGetProperties()`.
+
+**Dependency Updates**
+* [Upgraded to Akka.NET v1.5.60](https://github.com/akkadotnet/akka.net/releases/tag/1.5.60)
+
 #### 1.5.59 January 26th 2026 ####
 
 **Dependency Updates**
