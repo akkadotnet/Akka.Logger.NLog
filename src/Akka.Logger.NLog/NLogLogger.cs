@@ -64,7 +64,7 @@ namespace Akka.Logger.NLog
 
             // Add structured logging properties from semantic logging
             // This enables NLog layouts and targets to access structured properties by name
-            if (logEvent.TryGetProperties(out var properties))
+            if (logEvent.TryGetProperties(out var properties) && properties?.Count > 0)
             {
                 foreach (var prop in properties)
                 {
