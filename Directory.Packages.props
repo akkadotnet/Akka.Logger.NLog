@@ -6,7 +6,7 @@
   <!-- App dependencies -->
   <ItemGroup>
     <PackageVersion Include="Akka" Version="$(AkkaVersion)" />
-    <PackageVersion Include="NLog" Version="6.0.6" />
+    <PackageVersion Include="NLog" Version="6.1.0" />
   </ItemGroup>
   <!-- Test dependencies -->
   <ItemGroup>
