@@ -1,3 +1,12 @@
+#### 1.5.69 June 16th 2026 ####
+
+**New Features**
+* [Add Akka.Hosting integration demo and integration tests](https://github.com/akkadotnet/Akka.Logger.NLog/pull/260) - Includes a working end-to-end sample showing how to wire up Akka.Logger.NLog via `Akka.Hosting`, along with integration tests covering the hosted setup.
+* [Document Akka.Hosting setup in README](https://github.com/akkadotnet/Akka.Logger.NLog/pull/261) - README now includes a dedicated section explaining how to configure Akka.Logger.NLog through `Akka.Hosting`, making it easier to get started in modern .NET host environments.
+
+**Dependency Updates**
+* [Upgraded to Akka.NET v1.5.69](https://github.com/akkadotnet/Akka.Logger.NLog/pull/262)
+
 #### 1.5.60 February 10th 2026 ####
 
 **New Features**
