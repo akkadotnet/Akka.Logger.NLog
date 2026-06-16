@@ -57,5 +57,28 @@ Config myConfig = @"akka.loglevel = DEBUG
 var system = ActorSystem.Create("my-test-system", myConfig);
 ```
 
+### Configuration via Akka.Hosting
+
+NLog can be registered as the Akka.NET logger through Akka.Hosting using the `ConfigureLoggers` builder method:
+
+```csharp
+using Akka.Hosting;
+using Akka.Logger.NLog;
+
+// builder is a HostApplicationBuilder or WebApplicationBuilder
+builder.Services.AddAkka("MySystem", configurationBuilder =>
+{
+    configurationBuilder.ConfigureLoggers(loggerConfigBuilder =>
+    {
+        loggerConfigBuilder.ClearLoggers();           // remove Akka's default console logger
+        loggerConfigBuilder.AddLogger<NLogLogger>();  // route Akka events into NLog
+    });
+});
+```
+
+NLog targets and rules are still configured as usual—either via `NLog.config` file or programmatically (both methods are shown in the sections above).
+
+For a complete runnable example, see the demo project at `src/Examples/Akka.Logger.NLog.HostingDemo`.
+
 ## Maintainer
 - Akka.NET Team
